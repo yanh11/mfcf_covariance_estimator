@@ -55,7 +55,21 @@ class SeparatorWrapper:
             )
         return NotImplemented
 
+    def __lt__(self, other):
+        if isinstance(other, SeparatorWrapper):
+            return (
+                self.separator < other.separator
+                or self.separator_prior_threshold < other.separator_prior_threshold
+            )
+        return NotImplemented
 
+    def __gt__(self, other):
+        if isinstance(other, SeparatorWrapper):
+            return (
+                self.separator > other.separator
+                or self.separator_prior_threshold > other.separator_prior_threshold
+            )
+        return NotImplemented
 # -----------------------------------------------------------------------------
 # Helper formatting (debug/pretty-print utilities)
 # -----------------------------------------------------------------------------

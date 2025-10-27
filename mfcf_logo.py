@@ -12,7 +12,7 @@ from sklearn.utils.validation import check_array, check_is_fitted, _is_arraylike
 from fast_fast_mfcf import MFCF as _MFCFBuilder
 
 
-class MFCFCovariance(EmpiricalCovariance):
+class MFCFLogo(EmpiricalCovariance):
     """
     A precision and covariance estimator with an MFCF-assembled sparse inverse ("logo").
 
@@ -34,7 +34,7 @@ class MFCFCovariance(EmpiricalCovariance):
 
     gain_function_type : {'sumsquares'}, default='sumsquares'
         Gain function type to use in MFCF construction. The function is used to
-        determine which vertext to add next to maximize the overall gain in the
+        determine which vertex to add next to maximize the overall gain in the
         graph.
 
     assume_centered : bool, default=False
@@ -81,7 +81,7 @@ class MFCFCovariance(EmpiricalCovariance):
         self.coordination_number = coordination_number
         self.gain_function_type = gain_function_type
 
-    def fit(self, X: np.ndarray, y=None) -> "MFCFCovariance":
+    def fit(self, X: np.ndarray, y=None) -> "MFCFLogo":
         """Fit the estimator from data X.
 
         Parameters
@@ -165,7 +165,7 @@ class _FoldScore:
     error: Optional[str] = None
 
 
-class MFCFCovarianceCV(EmpiricalCovariance):
+class MFCFLogoCV(EmpiricalCovariance):
     """
     Cross-validated MFCF-based covariance/precision estimator.
 
@@ -173,7 +173,7 @@ class MFCFCovarianceCV(EmpiricalCovariance):
     maximizing the validation Gaussian log-likelihood:
         score = logdet(Theta) - trace(S_val @ Theta)
     where Theta is the LOGO precision estimated on the training fold using
-    `MFCFCovariance`, and S_val is the empirical covariance of the validation fold.
+    `MFCFLogo`, and S_val is the empirical covariance of the validation fold.
 
     Parameters
     ----------
@@ -196,14 +196,14 @@ class MFCFCovarianceCV(EmpiricalCovariance):
 
     # Scoring / stability
     assume_centered : bool, default=False
-        Passed to MFCFCovariance and empirical covariance computation.
+        Passed to MFCFLogo and empirical covariance computation.
 
     error_score : {'raise', float}, default=np.nan
         Score to assign if a fit/eval fails for a fold/setting. If 'raise',
         the exception is raised. If a float, the error is caught and this score
         is used for that fold.
 
-    # Parameters forwarded to MFCFCovariance
+    # Parameters forwarded to MFCFLogo
     threshold : float, default=0.0
         Gain threshold controlling attachment vs. new component.
 
@@ -263,7 +263,7 @@ class MFCFCovarianceCV(EmpiricalCovariance):
     fold_scores_ : list[_FoldScore]
         Per-fold detailed records (including errors if any).
 
-    estimator_ : MFCFCovariance
+    estimator_ : MFCFLogo
         Final refit estimator on the full data.
 
     Notes
@@ -369,7 +369,9 @@ class MFCFCovarianceCV(EmpiricalCovariance):
 
             for gi, k in enumerate(grid):
                 try:
-                    base = MFCFCovariance(
+                    if gi == 10 and k == 12 and fold_idx == 2:
+                        pass
+                    base = MFCFLogo(
                         threshold=self.threshold,
                         min_clique_size=self.min_clique_size,
                         max_clique_size=k,
@@ -392,6 +394,7 @@ class MFCFCovarianceCV(EmpiricalCovariance):
                     if self.error_score == "raise":
                         raise
                     # assign error_score, continue
+
                     es = float(self.error_score)
                     split_scores_per_param[gi].append(es)
                     fold_records.append(
@@ -428,7 +431,7 @@ class MFCFCovarianceCV(EmpiricalCovariance):
         self.best_max_clique_size_ = best_k
 
         # Refit on all data with best parameter
-        final = MFCFCovariance(
+        final = MFCFLogo(
             threshold=self.threshold,
             min_clique_size=self.min_clique_size,
             max_clique_size=best_k,
