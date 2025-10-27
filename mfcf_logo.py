@@ -12,11 +12,12 @@ from sklearn.utils.validation import check_array, check_is_fitted, _is_arraylike
 from fast_fast_mfcf import MFCF as _MFCFBuilder
 
 
-class MFCFLogo(EmpiricalCovariance):
+class MFCFLoGo(EmpiricalCovariance):
     """
-    A precision and covariance estimator with an MFCF-assembled sparse inverse ("logo").
+    A precision and covariance estimator with MFCF-LoGo algorithm. It constructs
+    an MFCF first then use the LoGo algorithm to obtain a precision matrix.
 
-    Precision matrix is the LOGO; estimated covariance is its inverse.
+    Precision matrix is the LoGo; estimated covariance is its inverse.
 
     Parameters
     ----------
@@ -46,10 +47,10 @@ class MFCFLogo(EmpiricalCovariance):
     Attributes
     ----------
     covariance_ : ndarray of shape (n_features, n_features)
-        Inverse of the LOGO precision estimate.
+        Inverse of the LoGo precision estimate.
 
     precision_ : ndarray of shape (n_features, n_features)
-        The LOGO estimator (sparse inverse assembled from cliques and separators).
+        The LoGo estimator (sparse inverse assembled from cliques and separators).
 
     location_ : ndarray of shape (n_features,)
         Estimated mean (0 if assume_centered=True).
@@ -58,7 +59,7 @@ class MFCFLogo(EmpiricalCovariance):
         Maximal cliques found by MFCF.
 
     separators_count_ : Counter[frozenset[int], int]
-        Separator multiplicities used in LOGO assembly.
+        Separator multiplicities used in the constructed MFCF.
 
     peo_ : list[int]
         Perfect elimination order of vertices produced by the algorithm.
@@ -81,7 +82,7 @@ class MFCFLogo(EmpiricalCovariance):
         self.coordination_number = coordination_number
         self.gain_function_type = gain_function_type
 
-    def fit(self, X: np.ndarray, y=None) -> "MFCFLogo":
+    def fit(self, X: np.ndarray, y=None) -> "MFCFLoGo":
         """Fit the estimator from data X.
 
         Parameters
@@ -129,7 +130,7 @@ class MFCFLogo(EmpiricalCovariance):
         self.separators_count_ = separators_count
         self.peo_ = peo
 
-        # precision is LOGO; covariance is inverse of LOGO
+        # precision is LoGo; covariance is inverse of LoGo
         # Add small ridge if needed to avoid singularities.
         self.precision_ = logo
         if self.store_precision and not np.all(np.isfinite(self.precision_)):
@@ -165,15 +166,15 @@ class _FoldScore:
     error: Optional[str] = None
 
 
-class MFCFLogoCV(EmpiricalCovariance):
+class MFCFLoGoCV(EmpiricalCovariance):
     """
     Cross-validated MFCF-based covariance/precision estimator.
 
     This estimator selects `max_clique_size` via K-fold cross-validation by
     maximizing the validation Gaussian log-likelihood:
         score = logdet(Theta) - trace(S_val @ Theta)
-    where Theta is the LOGO precision estimated on the training fold using
-    `MFCFLogo`, and S_val is the empirical covariance of the validation fold.
+    where Theta is the LoGo precision estimated on the training fold, and S_val
+    is the empirical covariance of the validation fold.
 
     Parameters
     ----------
@@ -196,14 +197,14 @@ class MFCFLogoCV(EmpiricalCovariance):
 
     # Scoring / stability
     assume_centered : bool, default=False
-        Passed to MFCFLogo and empirical covariance computation.
+        Passed to MFCFLoGo and empirical covariance computation.
 
     error_score : {'raise', float}, default=np.nan
         Score to assign if a fit/eval fails for a fold/setting. If 'raise',
         the exception is raised. If a float, the error is caught and this score
         is used for that fold.
 
-    # Parameters forwarded to MFCFLogo
+    # Parameters forwarded to MFCFLoGo
     threshold : float, default=0.0
         Gain threshold controlling attachment vs. new component.
 
@@ -231,10 +232,10 @@ class MFCFLogoCV(EmpiricalCovariance):
         Selected value for `max_clique_size`.
 
     covariance_ : ndarray of shape (n_features, n_features)
-        Inverse of the LOGO precision estimate.
+        Inverse of the LoGo precision estimate.
 
     precision_ : ndarray of shape (n_features, n_features)
-        LOGO precision estimated by refitting on the full dataset with the best
+        LoGo precision estimated by refitting on the full dataset with the best
         `max_clique_size`.
 
     location_ : ndarray of shape (n_features,)
@@ -244,7 +245,7 @@ class MFCFLogoCV(EmpiricalCovariance):
         Maximal cliques found by MFCF.
 
     separators_count_ : Counter[frozenset[int], int]
-        Separator multiplicities used in LOGO assembly.
+        Separator multiplicities used in the constructed MFCF.
 
     peo_ : list[int]
         Perfect elimination order of vertices produced by the algorithm.
@@ -263,7 +264,7 @@ class MFCFLogoCV(EmpiricalCovariance):
     fold_scores_ : list[_FoldScore]
         Per-fold detailed records (including errors if any).
 
-    estimator_ : MFCFLogo
+    estimator_ : MFCFLoGo
         Final refit estimator on the full data.
 
     Notes
@@ -371,7 +372,7 @@ class MFCFLogoCV(EmpiricalCovariance):
                 try:
                     if gi == 10 and k == 12 and fold_idx == 2:
                         pass
-                    base = MFCFLogo(
+                    base = MFCFLoGo(
                         threshold=self.threshold,
                         min_clique_size=self.min_clique_size,
                         max_clique_size=k,
@@ -431,7 +432,7 @@ class MFCFLogoCV(EmpiricalCovariance):
         self.best_max_clique_size_ = best_k
 
         # Refit on all data with best parameter
-        final = MFCFLogo(
+        final = MFCFLoGo(
             threshold=self.threshold,
             min_clique_size=self.min_clique_size,
             max_clique_size=best_k,
