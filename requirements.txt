@@ -1,0 +1,7 @@
+numpy
+scikit-learn
+scipy
+cvxpy
+pybind11
+riskfolio-lib
+optuna
