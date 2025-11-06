@@ -1,6 +1,6 @@
 """
 Tools for performing Direct Bubble Hierarchical Tree (DBHT) clustering
-using a Maximal Filtering Clique Forest (MFCF) backbone.
+using a Maximally Filtered Clique Forest (MFCF) backbone.
 
 This module replaces the TMFG graph-construction step in the original
 riskfolio DBHT implementation with an MFCF-based builder, improving

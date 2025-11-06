@@ -366,7 +366,7 @@ class Gains:
 # =============================================================================
 class MFCF:
     """
-    Maximum Filtering Clique Forest (MFCF) builder.
+    Maximally Filtered Clique Forest (MFCF) builder.
 
     Parameters
     ----------

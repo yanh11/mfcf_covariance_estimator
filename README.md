@@ -1,6 +1,6 @@
-# Fast Maximum Filtering Clique Forest Toolkit
+# Fast Maximally Filtered Clique Forest Toolkit
 
-Accelerated Maximum Filtering Clique Forest (MFCF) implementations for sparse precision estimation and hierarchical clustering. The core `fast_fast_mfcf` routine is ~100× faster than the original reference implementation while preserving the same outputs, enabling practical experimentation with large correlation or covariance matrices. See [this repo](https://github.com/yanh11/fast_fast_mfcf) for more details.
+Accelerated Maximally Filtered Clique Forest (MFCF) implementations for sparse precision estimation and hierarchical clustering. The core `fast_fast_mfcf` routine is ~100× faster than the original reference implementation while preserving the same outputs, enabling practical experimentation with large correlation or covariance matrices. See [this repo](https://github.com/yanh11/fast_fast_mfcf) for more details.
 
 ## Introduction
 - Build MFCF backbones from dense similarity matrices in a few seconds.
@@ -27,7 +27,7 @@ logging.basicConfig(level=logging.INFO)
 
 ## Usage
 
-### Building a Maximal Filtering Clique Forest (`MFCF()`)
+### Building a Maximally Filtered Clique Forest (`MFCF()`)
 ```python
 import numpy as np
 from fast_fast_mfcf import MFCF
